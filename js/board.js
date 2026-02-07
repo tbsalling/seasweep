@@ -292,10 +292,16 @@ class Board {
         // Damage adjacent obstacles (ice/seaweed near cleared tiles)
         this.damageAdjacentObstacles(pos.row, pos.col);
 
-        // If this tile has ice, break the ice (tile is cleared as part of match)
+        // If this tile has ice, damage it — only clear tile if ice is fully broken
         if (tile.obstacle === 'ice') {
-          tile.obstacle = null;
-          tile.obstacleHP = 0;
+          tile.obstacleHP--;
+          if (tile.obstacleHP <= 0) {
+            tile.obstacle = null;
+            tile.obstacleHP = 0;
+          } else {
+            // Ice still intact — tile survives this match
+            continue;
+          }
         }
 
         if (specialPos && pos.row === specialPos.row && pos.col === specialPos.col && group.special) {
@@ -315,9 +321,9 @@ class Board {
         }
       }
 
-      // Score: base 10 per tile, multiplied by combo and match length bonus
-      const lengthBonus = group.length >= 5 ? 3 : group.length === 4 ? 2 : 1;
-      score += group.positions.length * 10 * lengthBonus * (this.combo + 1);
+      // Score: base 8 per tile, multiplied by combo and match length bonus
+      const lengthBonus = group.length >= 5 ? 2.5 : group.length === 4 ? 1.5 : 1;
+      score += Math.floor(group.positions.length * 8 * lengthBonus * (this.combo + 1));
     }
 
     return { cleared, specials, score };
@@ -553,7 +559,7 @@ class Board {
         const tile = this.getTile(pos.row, pos.col);
         if (tile) {
           tile.obstacle = obs.type;
-          tile.obstacleHP = obs.type === OBSTACLE_TYPES.ICE ? 1 : 2;
+          tile.obstacleHP = obs.type === OBSTACLE_TYPES.ICE ? 2 : 3;
         }
       }
     }

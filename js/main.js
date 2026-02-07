@@ -271,7 +271,7 @@ class Game {
       case 'gameOver':
         if (btnId === 'watchAd') {
           this.ads.showRewardedAd(() => {
-            this.gameState.movesLeft += 5;
+            this.gameState.movesLeft += 3;
             this.state = 'playing';
           });
         } else if (btnId === 'retry') {
@@ -610,11 +610,11 @@ class Game {
     Storage.completeLevel(this.saveData, this.gameState.currentLevel, this.starsEarned);
 
     // Reward boosters occasionally
-    if (this.gameState.currentLevel % 5 === 0) {
+    if (this.gameState.currentLevel % 8 === 0) {
       this.saveData.boosters.bomb = (this.saveData.boosters.bomb || 0) + 1;
       Storage.save(this.saveData);
     }
-    if (this.gameState.currentLevel % 10 === 0) {
+    if (this.gameState.currentLevel % 15 === 0) {
       this.saveData.boosters.lightning = (this.saveData.boosters.lightning || 0) + 1;
       Storage.save(this.saveData);
     }
