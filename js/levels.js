@@ -4,8 +4,8 @@ const LevelGenerator = {
   generate(levelNum) {
     // Difficulty curves
     const gridSize = levelNum <= 5 ? 6 : levelNum <= 15 ? 7 : 8;
-    const tileTypes = Math.min(3 + Math.floor(levelNum / 6), TILE_TYPES.length);
-    const baseMoves = Math.max(15, 28 - Math.floor(levelNum / 4));
+    const tileTypes = Math.min(3 + Math.floor(levelNum / 4), TILE_TYPES.length);
+    const baseMoves = Math.max(12, 22 - Math.floor(levelNum / 3));
 
     const level = {
       level: levelNum,
@@ -21,9 +21,9 @@ const LevelGenerator = {
     // Objective selection based on level range
     if (levelNum <= 10) {
       // Tutorial: score only
-      const target = 600 + levelNum * 250;
+      const target = 800 + levelNum * 350;
       level.objectives.push({ type: 'score', target, current: 0 });
-      level.moves = Math.max(20, baseMoves + 3);
+      level.moves = Math.max(16, baseMoves);
     } else if (levelNum <= 20) {
       // Introduce collection objectives
       if (levelNum % 3 === 0) {
@@ -32,74 +32,94 @@ const LevelGenerator = {
           type: 'collect',
           tileId: tileIdx,
           emoji: TILE_TYPES[tileIdx].emoji,
-          target: 12 + Math.floor(levelNum / 3),
+          target: 15 + Math.floor(levelNum / 2),
           current: 0,
         });
       } else {
-        const target = 900 + levelNum * 350;
+        const target = 1200 + levelNum * 450;
         level.objectives.push({ type: 'score', target, current: 0 });
       }
+
+      // Ice obstacles introduced at level 12
+      if (levelNum >= 12) {
+        const iceCount = Math.min(Math.floor((levelNum - 10) / 2), 6);
+        if (iceCount > 0) {
+          level.obstacles.push({
+            type: 'ice',
+            positions: this.randomPositions(iceCount, gridSize, gridSize),
+          });
+        }
+      }
     } else if (levelNum <= 40) {
-      // Mix objectives + ice obstacles
+      // Mix objectives + obstacles
       if (levelNum % 2 === 0) {
         const tileIdx = Math.floor(Math.random() * Math.min(tileTypes, 4));
         level.objectives.push({
           type: 'collect',
           tileId: tileIdx,
           emoji: TILE_TYPES[tileIdx].emoji,
-          target: 17 + Math.floor(levelNum / 4),
+          target: 20 + Math.floor(levelNum / 3),
           current: 0,
         });
       }
-      const target = 1200 + levelNum * 300;
+      const target = 1800 + levelNum * 400;
       level.objectives.push({ type: 'score', target, current: 0 });
 
-      // Add ice obstacles (introduced earlier at level 21)
-      const iceCount = Math.min(Math.floor((levelNum - 17) / 3), 8);
+      // Ice obstacles (more aggressive ramp)
+      const iceCount = Math.min(Math.floor((levelNum - 12) / 2), 10);
       if (iceCount > 0) {
         level.obstacles.push({
           type: 'ice',
           positions: this.randomPositions(iceCount, gridSize, gridSize),
         });
       }
+
+      // Seaweed introduced at level 28
+      if (levelNum >= 28) {
+        const seaweedCount = Math.min(Math.floor((levelNum - 25) / 3), 5);
+        level.obstacles.push({
+          type: 'seaweed',
+          positions: this.randomPositions(seaweedCount, gridSize, gridSize),
+        });
+      }
     } else {
-      // Hard levels: multiple objectives + obstacles
+      // Hard levels: multiple objectives + heavy obstacles
       const tileIdx = Math.floor(Math.random() * Math.min(tileTypes, 5));
       level.objectives.push({
         type: 'collect',
         tileId: tileIdx,
         emoji: TILE_TYPES[tileIdx].emoji,
-        target: 22 + Math.floor(levelNum / 5),
+        target: 28 + Math.floor(levelNum / 4),
         current: 0,
       });
-      const target = 2200 + levelNum * 250;
+      const target = 3000 + levelNum * 350;
       level.objectives.push({ type: 'score', target, current: 0 });
 
-      // Ice + seaweed obstacles (seaweed introduced earlier at level 42)
-      const iceCount = Math.min(Math.floor((levelNum - 30) / 3), 10);
+      // Heavy ice + seaweed
+      const iceCount = Math.min(Math.floor((levelNum - 20) / 2), 12);
       if (iceCount > 0) {
         level.obstacles.push({
           type: 'ice',
           positions: this.randomPositions(iceCount, gridSize, gridSize),
         });
       }
-      if (levelNum >= 42) {
-        const seaweedCount = Math.min(Math.floor((levelNum - 38) / 4), 6);
+      const seaweedCount = Math.min(Math.floor((levelNum - 30) / 3), 8);
+      if (seaweedCount > 0) {
         level.obstacles.push({
           type: 'seaweed',
           positions: this.randomPositions(seaweedCount, gridSize, gridSize),
         });
       }
 
-      level.moves = Math.max(12, baseMoves - 4);
+      level.moves = Math.max(10, baseMoves - 5);
     }
 
-    // Star thresholds
+    // Star thresholds (tighter — 3 stars is a real achievement)
     const baseScore = level.objectives.find(o => o.type === 'score')?.target || 1000;
     level.starThresholds = [
       baseScore,
-      Math.floor(baseScore * 1.5),
-      Math.floor(baseScore * 2.4),
+      Math.floor(baseScore * 1.8),
+      Math.floor(baseScore * 3.0),
     ];
 
     return level;
