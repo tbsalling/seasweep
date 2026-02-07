@@ -267,7 +267,7 @@ class UI {
     const movesColor = gameState.movesLeft <= 3 ? '#ff5252' : '#fff';
     ctx.fillStyle = movesColor;
     ctx.textAlign = 'right';
-    ctx.fillText(t('hud_moves', { moves: gameState.movesLeft }), w - 10, 24);
+    ctx.fillText(t('hud_moves', { moves: gameState.movesLeft }), w - 45, 24);
 
     // Objectives bar (below grid)
     const objY = this.renderer.boardOffsetY + this.renderer.tileSize * (gameState.boardHeight || 7) + 15;
