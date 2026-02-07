@@ -121,22 +121,6 @@ class UI {
       this.addButton('dailyBonus', '🎁 Daily Bonus!', btnX, h * 0.45 + 130, btnW, btnH, { primary: true });
     }
 
-    // Lives display
-    ctx.fillStyle = '#fff';
-    ctx.font = '16px system-ui, -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    const livesStr = '❤️'.repeat(saveData.lives) + '🖤'.repeat(MAX_LIVES - saveData.lives);
-    ctx.fillText(livesStr, w / 2, h * 0.78);
-
-    if (saveData.lives < MAX_LIVES) {
-      const nextLifeMs = Storage.getNextLifeTime(saveData);
-      const mins = Math.floor(nextLifeMs / 60000);
-      const secs = Math.floor((nextLifeMs % 60000) / 1000);
-      ctx.fillStyle = 'rgba(200, 230, 255, 0.6)';
-      ctx.font = '13px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`Next life in ${mins}:${secs.toString().padStart(2, '0')}`, w / 2, h * 0.82);
-    }
-
     // Stats
     ctx.fillStyle = 'rgba(200, 230, 255, 0.5)';
     ctx.font = '14px system-ui, -apple-system, sans-serif';

@@ -47,9 +47,6 @@ class Game {
       this.audio.resume();
     }, { once: true });
 
-    // Update lives from time elapsed
-    Storage.updateLives(this.saveData);
-
     // Check daily bonus
     if (Storage.checkDailyBonus(this.saveData)) {
       this.state = 'dailyBonus';
@@ -81,11 +78,6 @@ class Game {
     this.tweens.update(dt);
     this.particles.update(dt);
     this.renderer.updateShake(dt);
-
-    // Refresh lives from timer (update every second for menu display)
-    if (this.state === 'menu' || this.state === 'levelSelect') {
-      Storage.updateLives(this.saveData);
-    }
 
     if (this.state === 'playing' && !this.animating) {
       this.hintTimer += dt;
@@ -214,11 +206,7 @@ class Game {
     switch (this.state) {
       case 'menu':
         if (btnId === 'play') {
-          Storage.updateLives(this.saveData);
-          if (Storage.spendLife(this.saveData)) {
-            this.startLevel(this.saveData.unlockedLevel);
-          }
-          // If lives are 0, the menu redraws showing 0 lives — player sees the issue
+          this.startLevel(this.saveData.unlockedLevel);
         } else if (btnId === 'levelSelect') {
           this.state = 'levelSelect';
           this.ui.levelSelectPage = 0;
@@ -245,9 +233,7 @@ class Game {
           this.ui.levelSelectPage++;
         } else if (btnId.startsWith('level_')) {
           const lvl = parseInt(btnId.split('_')[1]);
-          if (Storage.spendLife(this.saveData)) {
-            this.startLevel(lvl);
-          }
+          this.startLevel(lvl);
         }
         break;
 
@@ -276,11 +262,7 @@ class Game {
 
       case 'levelComplete':
         if (btnId === 'nextLevel') {
-          if (Storage.spendLife(this.saveData)) {
-            this.startLevel(this.gameState.currentLevel + 1);
-          } else {
-            this.state = 'menu';
-          }
+          this.startLevel(this.gameState.currentLevel + 1);
         } else if (btnId === 'toLevelSelect') {
           this.state = 'levelSelect';
         }
@@ -293,11 +275,7 @@ class Game {
             this.state = 'playing';
           });
         } else if (btnId === 'retry') {
-          if (Storage.spendLife(this.saveData)) {
-            this.startLevel(this.gameState.currentLevel);
-          } else {
-            this.state = 'menu';
-          }
+          this.startLevel(this.gameState.currentLevel);
         } else if (btnId === 'toLevelSelect') {
           this.state = 'levelSelect';
         }
