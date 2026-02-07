@@ -13,7 +13,10 @@ class Game {
     this.board = null;
     this.saveData = Storage.load();
 
-    this.state = 'menu'; // menu | levelSelect | playing | paused | levelComplete | gameOver | dailyBonus
+    this.state = 'menu'; // menu | levelSelect | playing | paused | levelComplete | gameOver | dailyBonus | help
+    this.helpScrollY = 0;
+    this.helpDragging = false;
+    this.helpLastPointerY = 0;
     this.gameState = null;
     this.selectedTile = null;
     this.hintTimer = 0;
@@ -40,6 +43,44 @@ class Game {
     this.input.onTileSelect = (row, col) => this.handleTileSelect(row, col);
     this.input.onSwipe = (r1, c1, r2, c2) => this.handleSwipe(r1, c1, r2, c2);
     this.input.onUIClick = (x, y) => this.handleUIClick(x, y);
+
+    // Help page scroll handling
+    const clampHelpScroll = () => {
+      const maxScroll = Math.max(0, (this.ui.helpContentHeight || 0) - (this.ui.helpViewHeight || 0));
+      this.helpScrollY = Math.max(0, Math.min(maxScroll, this.helpScrollY));
+    };
+    this.canvas.addEventListener('pointerdown', (e) => {
+      if (this.state === 'help') {
+        const rect = this.canvas.getBoundingClientRect();
+        this.helpDragging = true;
+        this.helpDragMoved = false;
+        this.helpLastPointerY = e.clientY - rect.top;
+      }
+    });
+    this.canvas.addEventListener('pointermove', (e) => {
+      if (this.state === 'help' && this.helpDragging) {
+        const rect = this.canvas.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        const dy = this.helpLastPointerY - y;
+        this.helpLastPointerY = y;
+        if (Math.abs(dy) > 1) this.helpDragMoved = true;
+        this.helpScrollY += dy;
+        clampHelpScroll();
+      }
+    });
+    this.canvas.addEventListener('pointerup', () => {
+      this.helpDragging = false;
+    });
+    this.canvas.addEventListener('pointercancel', () => {
+      this.helpDragging = false;
+    });
+    this.canvas.addEventListener('wheel', (e) => {
+      if (this.state === 'help') {
+        e.preventDefault();
+        this.helpScrollY += e.deltaY;
+        clampHelpScroll();
+      }
+    }, { passive: false });
 
     // Initialize audio on first interaction
     this.canvas.addEventListener('pointerdown', () => {
@@ -102,6 +143,10 @@ class Game {
 
       case 'levelSelect':
         this.ui.drawLevelSelect(this.saveData);
+        break;
+
+      case 'help':
+        this.ui.drawHelp(this.helpScrollY);
         break;
 
       case 'playing':
@@ -210,11 +255,21 @@ class Game {
         } else if (btnId === 'levelSelect') {
           this.state = 'levelSelect';
           this.ui.levelSelectPage = 0;
+        } else if (btnId === 'help') {
+          this.state = 'help';
+          this.helpScrollY = 0;
         } else if (btnId === 'sound') {
           this.saveData.soundEnabled = this.audio.toggle();
           Storage.save(this.saveData);
         } else if (btnId === 'dailyBonus') {
           this.state = 'dailyBonus';
+        }
+        break;
+
+      case 'help':
+        if (this.helpDragMoved) break;
+        if (btnId === 'back') {
+          this.state = 'menu';
         }
         break;
 

@@ -114,11 +114,12 @@ class UI {
 
     this.addButton('play', '▶ Play', btnX, h * 0.45, btnW, btnH, { primary: true, fontSize: 20 });
     this.addButton('levelSelect', '📋 Level Select', btnX, h * 0.45 + 65, btnW, btnH, { secondary: true });
+    this.addButton('help', '❓ How to Play', btnX, h * 0.45 + 130, btnW, btnH, { secondary: true });
 
     // Daily bonus indicator
     const today = new Date().toISOString().slice(0, 10);
     if (saveData.dailyBonusDate !== today) {
-      this.addButton('dailyBonus', '🎁 Daily Bonus!', btnX, h * 0.45 + 130, btnW, btnH, { primary: true });
+      this.addButton('dailyBonus', '🎁 Daily Bonus!', btnX, h * 0.45 + 195, btnW, btnH, { primary: true });
     }
 
     // Stats
@@ -428,5 +429,172 @@ class UI {
     ], [
       { id: 'claimBonus', label: 'Claim!', style: { primary: true } },
     ]);
+  }
+
+  // ── Help Page ──
+
+  drawHelp(scrollY) {
+    const ctx = this.renderer.ctx;
+    const w = this.renderer.width;
+    const h = this.renderer.height;
+    this.clearButtons();
+
+    this.renderer.drawBackground();
+
+    // Header bar (fixed, not scrolled)
+    const headerH = 50;
+    ctx.fillStyle = 'rgba(0, 20, 40, 0.9)';
+    ctx.fillRect(0, 0, w, headerH);
+
+    ctx.fillStyle = '#4fc3f7';
+    ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('How to Play', w / 2, headerH / 2);
+
+    this.addButton('back', '← Back', 10, 8, 80, 34, { secondary: true, fontSize: 14 });
+
+    // Clip content area below header
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, headerH, w, h - headerH);
+    ctx.clip();
+
+    // Content drawing helper
+    const margin = 20;
+    const contentW = w - margin * 2;
+    let y = headerH + 20 - scrollY;
+
+    const drawSection = (title) => {
+      ctx.fillStyle = '#4fc3f7';
+      ctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(title, margin, y);
+      y += 28;
+    };
+
+    const drawText = (text, indent) => {
+      ctx.fillStyle = '#ccc';
+      ctx.font = '14px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      const x = margin + (indent || 0);
+      // Word-wrap
+      const words = text.split(' ');
+      let line = '';
+      const maxW = contentW - (indent || 0);
+      for (const word of words) {
+        const test = line ? line + ' ' + word : word;
+        if (ctx.measureText(test).width > maxW) {
+          ctx.fillText(line, x, y);
+          y += 20;
+          line = word;
+        } else {
+          line = test;
+        }
+      }
+      if (line) {
+        ctx.fillText(line, x, y);
+        y += 20;
+      }
+    };
+
+    const drawItem = (emoji, name, desc) => {
+      ctx.font = '24px serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(emoji, margin + 4, y - 2);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px system-ui, -apple-system, sans-serif';
+      ctx.fillText(name, margin + 38, y);
+      y += 22;
+      drawText(desc, 38);
+      y += 6;
+    };
+
+    // ── Basics ──
+    drawSection('Basics');
+    drawText('Swap adjacent tiles to match 3 or more of the same kind. Complete all objectives before running out of moves.');
+    y += 10;
+
+    // ── Tiles ──
+    drawSection('Tiles');
+    const tiles = [
+      ['🐟', 'Fish'], ['🐚', 'Shell'], ['⭐', 'Starfish'],
+      ['🦑', 'Seahorse'], ['⚓', 'Anchor'], ['💎', 'Treasure'],
+    ];
+    // Draw tiles in a row
+    ctx.font = '28px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const tileSpacing = contentW / tiles.length;
+    for (let i = 0; i < tiles.length; i++) {
+      const tx = margin + tileSpacing * (i + 0.5);
+      ctx.fillText(tiles[i][0], tx, y);
+      ctx.fillStyle = '#aaa';
+      ctx.font = '10px system-ui, -apple-system, sans-serif';
+      ctx.fillText(tiles[i][1], tx, y + 32);
+      ctx.font = '28px serif';
+    }
+    y += 52;
+
+    // ── Special Tiles ──
+    drawSection('Special Tiles');
+    drawItem('🔥', 'Fire (match 4)', 'Created by matching 4 tiles in a row. Clears a 3×3 area when matched.');
+    drawItem('⚡', 'Lightning (match 5+)', 'Created by matching 5 or more tiles. Clears all tiles of the same type.');
+    drawItem('🌊', 'Wave (L/T shape)', 'Created by matching tiles in an L or T shape. Clears an entire row and column.');
+    y += 4;
+
+    // ── Obstacles ──
+    drawSection('Obstacles');
+    drawItem('🧊', 'Ice (HP 2)', 'Takes 2 matches to break. Tiles inside can still be matched.');
+    drawItem('🌿', 'Seaweed (HP 3)', 'Blocks swapping and matching. Match next to it to damage it.');
+    drawItem('🌫️', 'Fog (HP 1)', 'Hides the tile underneath. Match next to it or use a special to clear.');
+    y += 4;
+
+    // ── Boosters ──
+    drawSection('Boosters');
+    drawText('Use boosters from the bar below the board during gameplay. Tap one, then tap a tile to activate it.');
+    y += 4;
+    drawItem('🔥', 'Bomb', 'Clears the tapped tile and all 8 surrounding tiles.');
+    drawItem('⚡', 'Lightning', 'Clears every tile of the same type as the one you tap.');
+    drawItem('🌊', 'Wave', 'Clears the entire row and column of the tapped tile.');
+    drawText('Boosters are earned by completing levels (every 8th and 15th level) and from daily bonuses.');
+    y += 10;
+
+    // ── Tips ──
+    drawSection('Tips');
+    drawText('• Wait 5 seconds and a hint will highlight a valid move.');
+    y += 2;
+    drawText('• If no moves are available, the board shuffles automatically.');
+    y += 2;
+    drawText('• Special tiles are more powerful — aim for matches of 4 or 5!');
+    y += 2;
+    drawText('• Clear obstacles early to open up the board.');
+    y += 30;
+
+    ctx.restore();
+
+    // Calculate max scroll for clamping (store on UI for main.js to read)
+    this.helpContentHeight = y + scrollY - headerH;
+    this.helpViewHeight = h - headerH;
+
+    // Draw buttons (on top of clip)
+    for (const btn of this.buttons) {
+      this.drawButton(btn);
+    }
+
+    // Scroll indicator
+    if (this.helpContentHeight > this.helpViewHeight) {
+      const barH = h - headerH;
+      const thumbH = Math.max(30, barH * (this.helpViewHeight / this.helpContentHeight));
+      const maxScroll = this.helpContentHeight - this.helpViewHeight;
+      const thumbY = headerH + (scrollY / maxScroll) * (barH - thumbH);
+      ctx.fillStyle = 'rgba(79, 195, 247, 0.3)';
+      ctx.beginPath();
+      ctx.roundRect(w - 6, thumbY, 4, thumbH, 2);
+      ctx.fill();
+    }
   }
 }
