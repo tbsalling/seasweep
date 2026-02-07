@@ -1,6 +1,6 @@
 // sw.js — Service worker for offline caching
 
-const CACHE_NAME = 'sea-sweep-v1';
+const CACHE_NAME = 'sea-sweep-v2';
 const ASSETS = [
   './',
   './index.html',

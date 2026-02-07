@@ -144,9 +144,12 @@ class UI {
     ctx.fillText(`Level ${saveData.unlockedLevel} • ${totalStars} ⭐`, w / 2, h * 0.87);
 
     // Copyright
-    ctx.fillStyle = 'rgba(200, 230, 255, 0.35)';
+    ctx.fillStyle = 'rgba(200, 230, 255, 0.45)';
     ctx.font = '12px system-ui, -apple-system, sans-serif';
-    ctx.fillText(`\u00A9 ${new Date().getFullYear()} Thomas Borg Salling`, w / 2, h * 0.93);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(`\u00A9 ${new Date().getFullYear()} Thomas Borg Salling`, w / 2, h - 8);
+    ctx.textBaseline = 'middle';
 
     // Sound toggle
     this.addButton('sound', saveData.soundEnabled ? '🔊' : '🔇', w - 50, 10, 40, 40, { secondary: true, fontSize: 20 });
