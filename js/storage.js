@@ -11,6 +11,7 @@ const Storage = {
       totalGamesPlayed: 0,
       soundEnabled: true,
       dailyBonusDate: null,
+      language: null,
     };
   },
 

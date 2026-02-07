@@ -6,7 +6,7 @@
 //
 // Bump CACHE_NAME to force a full cache clear (e.g. after breaking changes).
 
-const CACHE_NAME = 'sea-sweep-v4';
+const CACHE_NAME = 'sea-sweep-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -19,6 +19,7 @@ const ASSETS = [
   './js/levels.js',
   './js/audio.js',
   './js/storage.js',
+  './js/i18n.js',
   './js/ui.js',
   './js/ads.js',
   './js/main.js',

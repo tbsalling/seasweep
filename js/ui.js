@@ -96,12 +96,12 @@ class UI {
     ctx.textBaseline = 'middle';
     ctx.shadowColor = '#0288d1';
     ctx.shadowBlur = 20;
-    ctx.fillText('🌊 Sea Sweep', w / 2, h * 0.18);
+    ctx.fillText('🌊 ' + t('menu_title'), w / 2, h * 0.18);
     ctx.shadowBlur = 0;
 
     ctx.fillStyle = 'rgba(200, 230, 255, 0.7)';
     ctx.font = '16px system-ui, -apple-system, sans-serif';
-    ctx.fillText('A Maritime Match-3 Adventure', w / 2, h * 0.25);
+    ctx.fillText(t('menu_subtitle'), w / 2, h * 0.25);
 
     // Decorative emojis
     ctx.font = '36px serif';
@@ -112,29 +112,32 @@ class UI {
     const btnH = 50;
     const btnX = (w - btnW) / 2;
 
-    this.addButton('play', '▶ Play', btnX, h * 0.45, btnW, btnH, { primary: true, fontSize: 20 });
-    this.addButton('levelSelect', '📋 Level Select', btnX, h * 0.45 + 65, btnW, btnH, { secondary: true });
-    this.addButton('help', '❓ How to Play', btnX, h * 0.45 + 130, btnW, btnH, { secondary: true });
+    this.addButton('play', t('menu_play'), btnX, h * 0.45, btnW, btnH, { primary: true, fontSize: 20 });
+    this.addButton('levelSelect', t('menu_level_select'), btnX, h * 0.45 + 65, btnW, btnH, { secondary: true });
+    this.addButton('help', t('menu_help'), btnX, h * 0.45 + 130, btnW, btnH, { secondary: true });
 
     // Daily bonus indicator
     const today = new Date().toISOString().slice(0, 10);
     if (saveData.dailyBonusDate !== today) {
-      this.addButton('dailyBonus', '🎁 Daily Bonus!', btnX, h * 0.45 + 195, btnW, btnH, { primary: true });
+      this.addButton('dailyBonus', t('menu_daily_bonus'), btnX, h * 0.45 + 195, btnW, btnH, { primary: true });
     }
 
     // Stats
     ctx.fillStyle = 'rgba(200, 230, 255, 0.5)';
     ctx.font = '14px system-ui, -apple-system, sans-serif';
     const totalStars = Object.values(saveData.stars).reduce((a, b) => a + b, 0);
-    ctx.fillText(`Level ${saveData.unlockedLevel} • ${totalStars} ⭐`, w / 2, h * 0.87);
+    ctx.fillText(t('menu_stats', { level: saveData.unlockedLevel, stars: totalStars }), w / 2, h * 0.87);
 
     // Copyright
     ctx.fillStyle = 'rgba(200, 230, 255, 0.45)';
     ctx.font = '12px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.fillText(`\u00A9 ${new Date().getFullYear()} Thomas Borg Salling`, w / 2, h - 8);
+    ctx.fillText(t('menu_copyright', { year: new Date().getFullYear() }), w / 2, h - 8);
     ctx.textBaseline = 'middle';
+
+    // Language toggle (flag shows target language)
+    this.addButton('lang', I18n.currentLang === 'da' ? '🇬🇧' : '🇩🇰', w - 95, 10, 40, 40, { secondary: true, fontSize: 20 });
 
     // Sound toggle
     this.addButton('sound', saveData.soundEnabled ? '🔊' : '🔇', w - 50, 10, 40, 40, { secondary: true, fontSize: 20 });
@@ -159,10 +162,10 @@ class UI {
     ctx.fillStyle = '#4fc3f7';
     ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Select Level', w / 2, 35);
+    ctx.fillText(t('levelselect_title'), w / 2, 35);
 
     // Back button
-    this.addButton('back', '← Back', 10, 10, 80, 36, { secondary: true, fontSize: 14 });
+    this.addButton('back', t('levelselect_back'), 10, 10, 80, 36, { secondary: true, fontSize: 14 });
 
     // Level grid
     const cols = 5;
@@ -253,18 +256,18 @@ class UI {
     ctx.fillStyle = '#4fc3f7';
     ctx.font = 'bold 14px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`Level ${gameState.currentLevel}`, 10, 24);
+    ctx.fillText(t('hud_level', { level: gameState.currentLevel }), 10, 24);
 
     // Score
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
-    ctx.fillText(`Score: ${gameState.score}`, w / 2, 24);
+    ctx.fillText(t('hud_score', { score: gameState.score }), w / 2, 24);
 
     // Moves
     const movesColor = gameState.movesLeft <= 3 ? '#ff5252' : '#fff';
     ctx.fillStyle = movesColor;
     ctx.textAlign = 'right';
-    ctx.fillText(`Moves: ${gameState.movesLeft}`, w - 10, 24);
+    ctx.fillText(t('hud_moves', { moves: gameState.movesLeft }), w - 10, 24);
 
     // Objectives bar (below grid)
     const objY = this.renderer.boardOffsetY + this.renderer.tileSize * (gameState.boardHeight || 7) + 15;
@@ -293,9 +296,9 @@ class UI {
     const boosterY = objY + 35;
     const boosterSize = 44;
     const boosterTypes = [
-      { key: 'bomb', emoji: '🔥', label: 'Bomb' },
-      { key: 'lightning', emoji: '⚡', label: 'Zap' },
-      { key: 'wave', emoji: '🌊', label: 'Wave' },
+      { key: 'bomb', emoji: '🔥' },
+      { key: 'lightning', emoji: '⚡' },
+      { key: 'wave', emoji: '🌊' },
     ];
     const boosterStartX = (w - boosterTypes.length * (boosterSize + 10)) / 2;
 
@@ -385,13 +388,13 @@ class UI {
     this.clearButtons();
     const starDisplay = '⭐'.repeat(starsEarned) + '☆'.repeat(3 - starsEarned);
 
-    this.drawModal('Level Complete!', [
+    this.drawModal(t('complete_title'), [
       starDisplay,
       '',
-      `Score: ${gameState.score}`,
+      t('complete_score', { score: gameState.score }),
     ], [
-      { id: 'nextLevel', label: 'Next Level', style: { primary: true } },
-      { id: 'toLevelSelect', label: 'Levels', style: { secondary: true } },
+      { id: 'nextLevel', label: t('complete_next'), style: { primary: true } },
+      { id: 'toLevelSelect', label: t('complete_levels'), style: { secondary: true } },
     ]);
   }
 
@@ -399,35 +402,35 @@ class UI {
     this.clearButtons();
     const btns = [];
     if (hasAds) {
-      btns.push({ id: 'watchAd', label: '📺 +5 Moves', style: { primary: true } });
+      btns.push({ id: 'watchAd', label: t('gameover_watch'), style: { primary: true } });
     }
-    btns.push({ id: 'retry', label: 'Retry', style: {} });
-    btns.push({ id: 'toLevelSelect', label: 'Levels', style: { secondary: true } });
+    btns.push({ id: 'retry', label: t('gameover_retry'), style: {} });
+    btns.push({ id: 'toLevelSelect', label: t('gameover_levels'), style: { secondary: true } });
 
-    this.drawModal('Out of Moves!', [
-      `Score: ${gameState.score}`,
+    this.drawModal(t('gameover_title'), [
+      t('gameover_score', { score: gameState.score }),
       '',
-      hasAds ? 'Watch an ad for +5 moves?' : '',
+      hasAds ? t('gameover_ad') : '',
     ], btns);
   }
 
   drawPauseMenu() {
     this.clearButtons();
-    this.drawModal('Paused', [], [
-      { id: 'resume', label: '▶ Resume', style: { primary: true } },
-      { id: 'retry', label: '↻ Retry', style: {} },
-      { id: 'toLevelSelect', label: 'Levels', style: { secondary: true } },
+    this.drawModal(t('pause_title'), [], [
+      { id: 'resume', label: t('pause_resume'), style: { primary: true } },
+      { id: 'retry', label: t('pause_retry'), style: {} },
+      { id: 'toLevelSelect', label: t('pause_levels'), style: { secondary: true } },
     ]);
   }
 
   drawDailyBonus() {
     this.clearButtons();
-    this.drawModal('🎁 Daily Bonus!', [
-      'Welcome back, Captain!',
+    this.drawModal(t('daily_title'), [
+      t('daily_welcome'),
       '',
-      'You earned a free Bomb booster! 🔥',
+      t('daily_reward'),
     ], [
-      { id: 'claimBonus', label: 'Claim!', style: { primary: true } },
+      { id: 'claimBonus', label: t('daily_claim'), style: { primary: true } },
     ]);
   }
 
@@ -450,9 +453,9 @@ class UI {
     ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('How to Play', w / 2, headerH / 2);
+    ctx.fillText(t('help_title'), w / 2, headerH / 2);
 
-    this.addButton('back', '← Back', 10, 8, 80, 34, { secondary: true, fontSize: 14 });
+    this.addButton('back', t('help_back'), 10, 8, 80, 34, { secondary: true, fontSize: 14 });
 
     // Clip content area below header
     ctx.save();
@@ -514,15 +517,15 @@ class UI {
     };
 
     // ── Basics ──
-    drawSection('Basics');
-    drawText('Swap adjacent tiles to match 3 or more of the same kind. Complete all objectives before running out of moves.');
+    drawSection(t('help_basics'));
+    drawText(t('help_basics_text'));
     y += 10;
 
     // ── Tiles ──
-    drawSection('Tiles');
+    drawSection(t('help_tiles'));
     const tiles = [
-      ['🐟', 'Fish'], ['🐚', 'Shell'], ['⭐', 'Starfish'],
-      ['🦑', 'Seahorse'], ['⚓', 'Anchor'], ['💎', 'Treasure'],
+      ['🐟', t('help_tile_fish')], ['🐚', t('help_tile_shell')], ['⭐', t('help_tile_starfish')],
+      ['🦑', t('help_tile_seahorse')], ['⚓', t('help_tile_anchor')], ['💎', t('help_tile_treasure')],
     ];
     // Draw tiles in a row
     ctx.font = '28px serif';
@@ -540,38 +543,38 @@ class UI {
     y += 52;
 
     // ── Special Tiles ──
-    drawSection('Special Tiles');
-    drawItem('🔥', 'Fire (match 4)', 'Created by matching 4 tiles in a row. Clears a 3×3 area when matched.');
-    drawItem('⚡', 'Lightning (match 5+)', 'Created by matching 5 or more tiles. Clears all tiles of the same type.');
-    drawItem('🌊', 'Wave (L/T shape)', 'Created by matching tiles in an L or T shape. Clears an entire row and column.');
+    drawSection(t('help_specials'));
+    drawItem('🔥', t('help_special_fire_name'), t('help_special_fire_desc'));
+    drawItem('⚡', t('help_special_lightning_name'), t('help_special_lightning_desc'));
+    drawItem('🌊', t('help_special_wave_name'), t('help_special_wave_desc'));
     y += 4;
 
     // ── Obstacles ──
-    drawSection('Obstacles');
-    drawItem('🧊', 'Ice (HP 2)', 'Takes 2 matches to break. Tiles inside can still be matched.');
-    drawItem('🌿', 'Seaweed (HP 3)', 'Blocks swapping and matching. Match next to it to damage it.');
-    drawItem('🌫️', 'Fog (HP 1)', 'Hides the tile underneath. Match next to it or use a special to clear.');
+    drawSection(t('help_obstacles'));
+    drawItem('🧊', t('help_obstacle_ice_name'), t('help_obstacle_ice_desc'));
+    drawItem('🌿', t('help_obstacle_seaweed_name'), t('help_obstacle_seaweed_desc'));
+    drawItem('🌫️', t('help_obstacle_fog_name'), t('help_obstacle_fog_desc'));
     y += 4;
 
     // ── Boosters ──
-    drawSection('Boosters');
-    drawText('Use boosters from the bar below the board during gameplay. Tap one, then tap a tile to activate it.');
+    drawSection(t('help_boosters'));
+    drawText(t('help_boosters_text'));
     y += 4;
-    drawItem('🔥', 'Bomb', 'Clears the tapped tile and all 8 surrounding tiles.');
-    drawItem('⚡', 'Lightning', 'Clears every tile of the same type as the one you tap.');
-    drawItem('🌊', 'Wave', 'Clears the entire row and column of the tapped tile.');
-    drawText('Boosters are earned by completing levels (every 8th and 15th level) and from daily bonuses.');
+    drawItem('🔥', t('help_booster_bomb_name'), t('help_booster_bomb_desc'));
+    drawItem('⚡', t('help_booster_lightning_name'), t('help_booster_lightning_desc'));
+    drawItem('🌊', t('help_booster_wave_name'), t('help_booster_wave_desc'));
+    drawText(t('help_boosters_earn'));
     y += 10;
 
     // ── Tips ──
-    drawSection('Tips');
-    drawText('• Wait 5 seconds and a hint will highlight a valid move.');
+    drawSection(t('help_tips'));
+    drawText(t('help_tip_hint'));
     y += 2;
-    drawText('• If no moves are available, the board shuffles automatically.');
+    drawText(t('help_tip_shuffle'));
     y += 2;
-    drawText('• Special tiles are more powerful — aim for matches of 4 or 5!');
+    drawText(t('help_tip_specials'));
     y += 2;
-    drawText('• Clear obstacles early to open up the board.');
+    drawText(t('help_tip_obstacles'));
     y += 30;
 
     ctx.restore();

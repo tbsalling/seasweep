@@ -12,6 +12,7 @@ class Game {
     this.ads = new AdManager();
     this.board = null;
     this.saveData = Storage.load();
+    I18n.init(this.saveData);
 
     this.state = 'menu'; // menu | levelSelect | playing | paused | levelComplete | gameOver | dailyBonus | help
     this.helpScrollY = 0;
@@ -193,7 +194,7 @@ class Game {
       ctx.fillStyle = '#ffdd00';
       ctx.font = 'bold 16px system-ui, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`Tap a tile to use ${this.boosterMode}!`, this.renderer.width / 2, this.renderer.boardOffsetY - 10);
+      ctx.fillText(t('booster_tap_prompt', { booster: t('booster_' + this.boosterMode) }), this.renderer.width / 2, this.renderer.boardOffsetY - 10);
     }
 
     // Particles on top
@@ -263,6 +264,8 @@ class Game {
           Storage.save(this.saveData);
         } else if (btnId === 'dailyBonus') {
           this.state = 'dailyBonus';
+        } else if (btnId === 'lang') {
+          I18n.toggle(this.saveData);
         }
         break;
 
