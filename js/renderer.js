@@ -153,6 +153,15 @@ class Renderer {
       ctx.roundRect(-half, -half, this.tileSize - 4, this.tileSize - 4, 4);
       ctx.fill();
       ctx.stroke();
+    } else if (tile.obstacle === 'fog') {
+      ctx.fillStyle = 'rgba(40, 50, 70, 0.6)';
+      ctx.strokeStyle = 'rgba(80, 100, 130, 0.5)';
+      ctx.lineWidth = 2;
+      const half = this.tileSize / 2 - 2;
+      ctx.beginPath();
+      ctx.roundRect(-half, -half, this.tileSize - 4, this.tileSize - 4, 4);
+      ctx.fill();
+      ctx.stroke();
     }
 
     // Draw special tile glow

@@ -18,6 +18,7 @@ const SPECIAL_TYPES = {
 const OBSTACLE_TYPES = {
   ICE: 'ice',
   SEAWEED: 'seaweed',
+  FOG: 'fog',
 };
 
 class Tile {
@@ -26,12 +27,15 @@ class Tile {
     this.row = row;
     this.col = col;
     this.special = null; // null | 'bomb' | 'lightning' | 'wave'
-    this.obstacle = null; // null | 'ice' | 'seaweed'
+    this.obstacle = null; // null | 'ice' | 'seaweed' | 'fog'
     this.obstacleHP = 0;
     this.marked = false; // marked for removal
   }
 
   get emoji() {
+    if (this.obstacle === 'fog') {
+      return '🌫️';
+    }
     if (this.special) {
       return SPECIAL_TYPES[this.special.toUpperCase()].emoji;
     }
@@ -346,7 +350,9 @@ class Board {
           const c = col + dc;
           if (r === row && c === col) continue;
           const t = this.getTile(r, c);
-          if (t && !t.obstacle) {
+          if (t && (!t.obstacle || t.obstacle === 'fog')) {
+            t.obstacle = null;
+            t.obstacleHP = 0;
             extra.push({ row: r, col: c, typeId: t.typeId, emoji: t.emoji });
             this.grid[r][c] = null;
           } else if (t && t.obstacle) {
@@ -361,7 +367,9 @@ class Board {
         for (let c = 0; c < this.width; c++) {
           const t = this.getTile(r, c);
           if (t && t.typeId === targetType && (r !== row || c !== col)) {
-            if (!t.obstacle) {
+            if (!t.obstacle || t.obstacle === 'fog') {
+              t.obstacle = null;
+              t.obstacleHP = 0;
               extra.push({ row: r, col: c, typeId: t.typeId, emoji: t.emoji });
               this.grid[r][c] = null;
             }
@@ -373,7 +381,9 @@ class Board {
       for (let c = 0; c < this.width; c++) {
         if (c === col) continue;
         const t = this.getTile(row, c);
-        if (t && !t.obstacle) {
+        if (t && (!t.obstacle || t.obstacle === 'fog')) {
+          t.obstacle = null;
+          t.obstacleHP = 0;
           extra.push({ row: row, col: c, typeId: t.typeId, emoji: t.emoji });
           this.grid[row][c] = null;
         } else if (t && t.obstacle) {
@@ -383,7 +393,9 @@ class Board {
       for (let r = 0; r < this.height; r++) {
         if (r === row) continue;
         const t = this.getTile(r, col);
-        if (t && !t.obstacle) {
+        if (t && (!t.obstacle || t.obstacle === 'fog')) {
+          t.obstacle = null;
+          t.obstacleHP = 0;
           extra.push({ row: r, col: col, typeId: t.typeId, emoji: t.emoji });
           this.grid[r][col] = null;
         } else if (t && t.obstacle) {
@@ -523,8 +535,9 @@ class Board {
       const flat = [];
       for (let r = 0; r < this.height; r++) {
         for (let c = 0; c < this.width; c++) {
-          if (this.grid[r][c] && !this.grid[r][c].obstacle) {
-            flat.push(this.grid[r][c]);
+          const t = this.grid[r][c];
+          if (t && (!t.obstacle || t.obstacle === 'fog')) {
+            flat.push(t);
           }
         }
       }
@@ -537,7 +550,8 @@ class Board {
       let idx = 0;
       for (let r = 0; r < this.height; r++) {
         for (let c = 0; c < this.width; c++) {
-          if (this.grid[r][c] && !this.grid[r][c].obstacle) {
+          const t = this.grid[r][c];
+          if (t && (!t.obstacle || t.obstacle === 'fog')) {
             this.grid[r][c] = flat[idx];
             flat[idx].row = r;
             flat[idx].col = c;
@@ -559,7 +573,7 @@ class Board {
         const tile = this.getTile(pos.row, pos.col);
         if (tile) {
           tile.obstacle = obs.type;
-          tile.obstacleHP = obs.type === OBSTACLE_TYPES.ICE ? 2 : 3;
+          tile.obstacleHP = obs.type === OBSTACLE_TYPES.ICE ? 2 : obs.type === OBSTACLE_TYPES.FOG ? 1 : 3;
         }
       }
     }

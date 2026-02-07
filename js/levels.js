@@ -35,6 +35,15 @@ const LevelGenerator = {
           });
         }
       }
+
+      // Fog from level 8
+      if (levelNum >= 8) {
+        const fogCount = 2 + Math.floor((levelNum - 8) * 2);
+        level.obstacles.push({
+          type: 'fog',
+          positions: this.randomPositions(fogCount, gridSize, gridSize),
+        });
+      }
     } else if (levelNum <= 20) {
       // Introduce collection objectives
       if (levelNum % 3 === 0) {
@@ -68,6 +77,13 @@ const LevelGenerator = {
           positions: this.randomPositions(seaweedCount, gridSize, gridSize),
         });
       }
+
+      // Fog (levels 11-20): 4-10 fog tiles
+      const fogCount = Math.min(4 + Math.floor((levelNum - 11) / 2), 10);
+      level.obstacles.push({
+        type: 'fog',
+        positions: this.randomPositions(fogCount, gridSize, gridSize),
+      });
     } else if (levelNum <= 40) {
       // Mix objectives + obstacles
       if (levelNum % 2 === 0) {
@@ -100,6 +116,13 @@ const LevelGenerator = {
           positions: this.randomPositions(seaweedCount, gridSize, gridSize),
         });
       }
+
+      // Fog (levels 21-40): 4-10 fog tiles
+      const fogCount = Math.min(4 + Math.floor((levelNum - 20) / 3), 10);
+      level.obstacles.push({
+        type: 'fog',
+        positions: this.randomPositions(fogCount, gridSize, gridSize),
+      });
     } else {
       // Hard levels: multiple objectives + heavy obstacles
       const tileIdx = Math.floor(Math.random() * Math.min(tileTypes, 5));
@@ -128,6 +151,13 @@ const LevelGenerator = {
           positions: this.randomPositions(seaweedCount, gridSize, gridSize),
         });
       }
+
+      // Fog (levels 40+): 6-14 fog tiles
+      const fogCount = Math.min(6 + Math.floor((levelNum - 40) / 3), 14);
+      level.obstacles.push({
+        type: 'fog',
+        positions: this.randomPositions(fogCount, gridSize, gridSize),
+      });
 
       level.moves = Math.max(8, baseMoves - 6);
     }
