@@ -44,10 +44,22 @@
   <script src="js/ads.js"></script>
   <script src="js/main.js"></script>
 
-  <!-- Service worker registration -->
+  <!-- Service worker registration + auto-reload on update -->
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      // Track whether a SW was already controlling this page (i.e. not a first visit)
+      var hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+
+      // When a new service worker takes control, reload to pick up updated JS/CSS.
+      // Skip on first visit (no previous controller) to avoid an unnecessary reload.
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        if (!hadController) { hadController = true; return; }
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
     }
   </script>
 </body>
