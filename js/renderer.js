@@ -162,13 +162,15 @@ class Renderer {
       ctx.shadowBlur = 12;
     }
 
-    // Draw emoji
+    // Draw emoji — reset fillStyle and use color emoji font stack
     const emoji = tile.emoji;
-    const fontSize = Math.floor(this.tileSize * 0.6);
-    ctx.font = `${fontSize}px serif`;
+    const fontSize = Math.floor(this.tileSize * 0.65);
+    ctx.fillStyle = '#fff';
+    ctx.shadowBlur = 0;
+    ctx.font = `${fontSize}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(emoji, 0, 2); // slight y offset for better centering
+    ctx.fillText(emoji, 0, 2);
 
     // Draw special indicator ring
     if (tile.special) {
